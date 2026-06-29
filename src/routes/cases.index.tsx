@@ -29,6 +29,28 @@ const DIFFICULTIES: CaseDifficulty[] = ["基础", "进阶", "挑战"];
 function CasesPage() {
   const [category, setCategory] = useState<CaseCategory | "all">("all");
   const [difficulty, setDifficulty] = useState<CaseDifficulty | "all">("all");
+  const auth = useAuth();
+  const fetchStats = useServerFn(listMyAttemptStats);
+  const [stats, setStats] = useState<Map<string, AttemptStat>>(new Map());
+
+  useEffect(() => {
+    if (!auth.user) {
+      setStats(new Map());
+      return;
+    }
+    let active = true;
+    fetchStats({ data: undefined } as never)
+      .then((rows) => {
+        if (!active) return;
+        const m = new Map<string, AttemptStat>();
+        for (const r of rows) m.set(r.case_id, r);
+        setStats(m);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [auth.user, fetchStats]);
 
   const filtered = useMemo(
     () =>
