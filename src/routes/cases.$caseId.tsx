@@ -1,6 +1,9 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Play, Target, Clock, FileCode2, Terminal } from "lucide-react";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { ChevronLeft, Play, Target, Clock, FileCode2, Terminal, Loader2, AlertCircle } from "lucide-react";
 import { getCaseById, CATEGORY_LABEL, type FinanceCase } from "@/lib/cases";
+import { generatePracticeScaffold } from "@/lib/cases.functions";
 
 export const Route = createFileRoute("/cases/$caseId")({
   loader: ({ params }) => {
@@ -39,17 +42,30 @@ export const Route = createFileRoute("/cases/$caseId")({
 function CaseDetailPage() {
   const c = Route.useLoaderData() as FinanceCase;
   const navigate = useNavigate();
+  const generate = useServerFn(generatePracticeScaffold);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const startPractice = () => {
+  const startPractice = async () => {
+    setLoading(true);
+    setError(null);
     try {
+      const { code, notes } = await generate({ data: { caseId: c.id } });
       sessionStorage.setItem(
         "codementor:practice",
-        JSON.stringify({ caseId: c.id, language: "python", code: c.referenceCode }),
+        JSON.stringify({
+          caseId: c.id,
+          caseTitle: c.title,
+          language: "python",
+          code,
+          notes,
+        }),
       );
-    } catch {
-      /* ignore */
+      await navigate({ to: "/" });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "生成失败，请稍后重试");
+      setLoading(false);
     }
-    void navigate({ to: "/" });
   };
 
   return (
@@ -84,16 +100,39 @@ function CaseDetailPage() {
           <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">
             {c.description}
           </p>
-          <div className="mt-8">
-            <button
-              onClick={startPractice}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-foreground text-background text-sm hover:opacity-90 transition-opacity"
-            >
-              <Play className="h-3.5 w-3.5" strokeWidth={2} />
-              开始练习
-            </button>
+          <div className="mt-8 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => void startPractice()}
+                disabled={loading}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-foreground text-background text-sm hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
+                    生成模拟数据中…
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-3.5 w-3.5" strokeWidth={2} />
+                    开始练习
+                  </>
+                )}
+              </button>
+              <span className="text-xs text-muted-foreground">
+                AI 将为你生成专属模拟数据与练习脚手架
+              </span>
+            </div>
+            {error && (
+              <div className="inline-flex items-start gap-2 text-xs text-destructive">
+                <AlertCircle className="h-3.5 w-3.5 mt-0.5" strokeWidth={1.5} />
+                <span>{error}</span>
+              </div>
+            )}
           </div>
         </div>
+
+
 
         <div className="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-10">
           <section>
