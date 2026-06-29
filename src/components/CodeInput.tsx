@@ -1,5 +1,12 @@
-import { useRef, useState, type DragEvent } from "react";
-import CodeMirror from "@uiw/react-codemirror";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type DragEvent,
+} from "react";
+import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
+import { EditorView } from "@codemirror/view";
 import { python } from "@codemirror/lang-python";
 import { javascript } from "@codemirror/lang-javascript";
 import { java } from "@codemirror/lang-java";
@@ -13,6 +20,10 @@ interface Props {
   language: LanguageId;
   value: string;
   onChange: (code: string) => void;
+}
+
+export interface CodeInputHandle {
+  jumpToLine: (line: number) => void;
 }
 
 function getExtension(lang: LanguageId) {
@@ -33,10 +44,33 @@ function getExtension(lang: LanguageId) {
   }
 }
 
-export function CodeInput({ language, value, onChange }: Props) {
+export const CodeInput = forwardRef<CodeInputHandle, Props>(function CodeInput(
+  { language, value, onChange },
+  ref,
+) {
   const [tab, setTab] = useState<"paste" | "upload">("paste");
   const [dragging, setDragging] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const cmRef = useRef<ReactCodeMirrorRef>(null);
+
+  useImperativeHandle(ref, () => ({
+    jumpToLine: (line: number) => {
+      setTab("paste");
+      // wait one frame for editor to be mounted/visible
+      requestAnimationFrame(() => {
+        const view = cmRef.current?.view;
+        if (!view) return;
+        const total = view.state.doc.lines;
+        const target = Math.max(1, Math.min(total, Math.floor(line)));
+        const lineObj = view.state.doc.line(target);
+        view.dispatch({
+          selection: { anchor: lineObj.from, head: lineObj.to },
+          effects: EditorView.scrollIntoView(lineObj.from, { y: "center" }),
+        });
+        view.focus();
+      });
+    },
+  }));
 
   const handleFile = async (file: File) => {
     const text = await file.text();
@@ -88,6 +122,7 @@ export function CodeInput({ language, value, onChange }: Props) {
       {tab === "paste" ? (
         <div className="flex-1 min-h-[420px] border border-border bg-card overflow-hidden">
           <CodeMirror
+            ref={cmRef}
             value={value}
             height="100%"
             minHeight="420px"
@@ -133,4 +168,4 @@ export function CodeInput({ language, value, onChange }: Props) {
       )}
     </div>
   );
-}
+});
