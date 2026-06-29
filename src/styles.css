@@ -92,6 +92,8 @@
   --destructive-foreground: oklch(0.985 0.005 85);
   --warning: oklch(0.7 0.13 75);
   --success: oklch(0.55 0.09 155);
+  --diff-add: oklch(0.95 0.05 155 / 55%);
+  --diff-del: oklch(0.92 0.05 25 / 45%);
 
   --border: oklch(0.91 0.006 85);               /* #E8E5DF */
   --border-strong: oklch(0.85 0.008 85);
