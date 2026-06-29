@@ -85,6 +85,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "智能代码纠错与优化助手" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "CodeMentor AI" },
+      { name: "twitter:description", content: "智能代码纠错与优化助手" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f72bae81-568e-4191-8ad1-21f0200f18ee/id-preview-17aa36d3--c0a8a43c-c7f7-447f-8d24-3ae9bde4b0b5.lovable.app-1782694628192.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f72bae81-568e-4191-8ad1-21f0200f18ee/id-preview-17aa36d3--c0a8a43c-c7f7-447f-8d24-3ae9bde4b0b5.lovable.app-1782694628192.png" },
     ],
     links: [
       {
