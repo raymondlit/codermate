@@ -161,6 +161,30 @@ function Workbench() {
               <LineChart className="h-3.5 w-3.5" strokeWidth={1.5} />
               学习报告
             </Link>
+            {(auth.role === "teacher" || auth.role === "super_admin") && (
+              <Link
+                to="/classes"
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <User className="h-3.5 w-3.5" strokeWidth={1.5} />
+                我的班级
+              </Link>
+            )}
+            {auth.user && auth.role === "student" && (
+              <button
+                onClick={async () => {
+                  const code = window.prompt("请输入老师提供的班级邀请码：");
+                  if (!code) return;
+                  const { error } = await supabase.rpc("join_class_by_code", { _code: code.trim() });
+                  if (error) window.alert(`加入失败：${error.message}`);
+                  else window.alert("已成功加入班级！");
+                }}
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <User className="h-3.5 w-3.5" strokeWidth={1.5} />
+                加入班级
+              </button>
+            )}
             {auth.role === "super_admin" && (
               <Link
                 to="/admin"
