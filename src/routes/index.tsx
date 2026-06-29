@@ -36,6 +36,7 @@ function Workbench() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const codeInputRef = useRef<CodeInputHandle>(null);
+  const [practice, setPractice] = useState<{ caseTitle?: string; notes?: string } | null>(null);
 
   // 从案例库带过来的练习初始化
   useEffect(() => {
@@ -43,9 +44,17 @@ function Workbench() {
       const raw = sessionStorage.getItem("codementor:practice");
       if (!raw) return;
       sessionStorage.removeItem("codementor:practice");
-      const payload = JSON.parse(raw) as { language?: LanguageId; code?: string };
+      const payload = JSON.parse(raw) as {
+        language?: LanguageId;
+        code?: string;
+        caseTitle?: string;
+        notes?: string;
+      };
       if (payload.language) setLanguage(payload.language);
       if (payload.code) setCode(payload.code);
+      if (payload.caseTitle || payload.notes) {
+        setPractice({ caseTitle: payload.caseTitle, notes: payload.notes });
+      }
     } catch {
       /* ignore */
     }
