@@ -136,6 +136,8 @@
   --destructive-foreground: oklch(0.95 0.005 85);
   --warning: oklch(0.75 0.13 75);
   --success: oklch(0.65 0.09 155);
+  --diff-add: oklch(0.45 0.08 155 / 35%);
+  --diff-del: oklch(0.45 0.1 25 / 30%);
   --border: oklch(1 0 0 / 10%);
   --border-strong: oklch(1 0 0 / 18%);
   --input: oklch(1 0 0 / 15%);
