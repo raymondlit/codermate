@@ -42,6 +42,7 @@ export function useAuth(): AuthState {
       ]);
       if (!active) return;
       const role =
+        (roles?.find((r) => r.role === "super_admin")?.role as AppRole) ??
         (roles?.find((r) => r.role === "admin")?.role as AppRole) ??
         (roles?.find((r) => r.role === "teacher")?.role as AppRole) ??
         (roles?.[0]?.role as AppRole) ??
