@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as JoinRouteImport } from './routes/join'
 import { Route as ClassesRouteImport } from './routes/classes'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -20,6 +21,11 @@ import { Route as CasesCaseIdRouteImport } from './routes/cases.$caseId'
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinRoute = JoinRouteImport.update({
+  id: '/join',
+  path: '/join',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClassesRoute = ClassesRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/classes': typeof ClassesRoute
+  '/join': typeof JoinRoute
   '/reports': typeof ReportsRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
   '/cases/': typeof CasesIndexRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/classes': typeof ClassesRoute
+  '/join': typeof JoinRoute
   '/reports': typeof ReportsRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
   '/cases': typeof CasesIndexRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/classes': typeof ClassesRoute
+  '/join': typeof JoinRoute
   '/reports': typeof ReportsRoute
   '/cases/$caseId': typeof CasesCaseIdRoute
   '/cases/': typeof CasesIndexRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/classes'
+    | '/join'
     | '/reports'
     | '/cases/$caseId'
     | '/cases/'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/classes'
+    | '/join'
     | '/reports'
     | '/cases/$caseId'
     | '/cases'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/classes'
+    | '/join'
     | '/reports'
     | '/cases/$caseId'
     | '/cases/'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   ClassesRoute: typeof ClassesRoute
+  JoinRoute: typeof JoinRoute
   ReportsRoute: typeof ReportsRoute
   CasesCaseIdRoute: typeof CasesCaseIdRoute
   CasesIndexRoute: typeof CasesIndexRoute
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join': {
+      id: '/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof JoinRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/classes': {
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   ClassesRoute: ClassesRoute,
+  JoinRoute: JoinRoute,
   ReportsRoute: ReportsRoute,
   CasesCaseIdRoute: CasesCaseIdRoute,
   CasesIndexRoute: CasesIndexRoute,

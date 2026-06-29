@@ -1,9 +1,12 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    invite: typeof s.invite === "string" ? s.invite : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "登录 · CodeMentor AI" },
@@ -18,29 +21,25 @@ type Role = "student" | "teacher";
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("signin");
+  const search = useSearch({ from: "/auth" });
+  const [mode, setMode] = useState<Mode>(search.invite ? "signup" : "signin");
   const [role, setRole] = useState<Role>("student");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [inviteCode, setInviteCode] = useState(search.invite?.toUpperCase() ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // If already signed in, send to home
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) void navigate({ to: "/" });
-    });
-  }, [navigate]);
-
   const [info, setInfo] = useState<string | null>(null);
 
-  // If already signed in, send to home
+  // If already signed in, send to home (or join page if invite present)
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) void navigate({ to: "/" });
+      if (!data.session) return;
+      if (search.invite) void navigate({ to: "/join", search: { code: search.invite } });
+      else void navigate({ to: "/" });
     });
-  }, [navigate]);
+  }, [navigate, search.invite]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,9 +65,27 @@ function AuthPage() {
           setLoading(false);
           return;
         }
+        // Student: try to join class by code if provided
+        if (inviteCode.trim()) {
+          const { error: joinErr } = await supabase.rpc("join_class_by_code", {
+            _code: inviteCode.trim().toUpperCase(),
+          });
+          if (joinErr) {
+            setInfo(`账号已创建，但加入班级失败：${joinErr.message}。你可以稍后在「加入班级」页面重试。`);
+            setLoading(false);
+            return;
+          }
+          void navigate({ to: "/join", search: { code: inviteCode.trim().toUpperCase() } });
+          return;
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        // 登录后若 URL 带邀请码，先去加入
+        if (search.invite) {
+          void navigate({ to: "/join", search: { code: search.invite } });
+          return;
+        }
       }
       void navigate({ to: "/" });
     } catch (err) {
@@ -144,6 +161,21 @@ function AuthPage() {
                     ))}
                   </div>
                 </div>
+                {role === "student" && (
+                  <div>
+                    <label className="block text-[11px] text-muted-foreground uppercase tracking-wider mb-1.5">
+                      班级邀请码 <span className="normal-case tracking-normal">（可选）</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={inviteCode}
+                      onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                      maxLength={16}
+                      className="w-full px-3 py-2 text-sm font-mono tracking-widest bg-card border border-border focus:border-foreground focus:outline-none uppercase"
+                      placeholder="如有老师提供的邀请码请填写"
+                    />
+                  </div>
+                )}
               </>
             )}
 
