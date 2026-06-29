@@ -138,6 +138,19 @@ function Workbench() {
 
 
       <main className="flex-1 mx-auto max-w-[1400px] w-full px-8 py-10">
+        {practice && (
+          <div className="mb-8 border-l-2 border-foreground pl-4 py-2">
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+              正在练习
+            </div>
+            <div className="text-sm text-foreground font-medium">{practice.caseTitle}</div>
+            {practice.notes && (
+              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                {practice.notes}
+              </p>
+            )}
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10">
           <section>
             <div className="mb-5">
