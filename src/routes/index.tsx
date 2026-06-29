@@ -1,12 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Loader2, AlertCircle } from "lucide-react";
+import { Sparkles, Loader2, AlertCircle, LogIn, LogOut, User } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { CodeInput, type CodeInputHandle } from "@/components/CodeInput";
 import { AnalysisResults } from "@/components/AnalysisResults";
 import { analyzeCode } from "@/lib/analyze.functions";
 import type { Analysis, LanguageId } from "@/lib/analyze.types";
+import { useAuth } from "@/lib/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({
