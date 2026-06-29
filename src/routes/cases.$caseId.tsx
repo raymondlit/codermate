@@ -1,6 +1,9 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, Play, Target, Clock, FileCode2, Terminal } from "lucide-react";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { ChevronLeft, Play, Target, Clock, FileCode2, Terminal, Loader2, AlertCircle } from "lucide-react";
 import { getCaseById, CATEGORY_LABEL, type FinanceCase } from "@/lib/cases";
+import { generatePracticeScaffold } from "@/lib/cases.functions";
 
 export const Route = createFileRoute("/cases/$caseId")({
   loader: ({ params }) => {
