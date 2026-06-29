@@ -87,6 +87,13 @@ function Workbench() {
             </span>
           </div>
           <div className="flex items-center gap-4">
+            <Link
+              to="/cases"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <BookOpen className="h-3.5 w-3.5" strokeWidth={1.5} />
+              财务案例库
+            </Link>
             {auth.loading ? null : auth.user ? (
               <>
                 <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
