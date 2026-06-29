@@ -11,6 +11,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AppearanceSettings } from "@/components/AppearanceSettings";
+import { useAppearanceBootstrap } from "@/lib/useAppearance";
 
 function NotFoundComponent() {
   return (
@@ -113,11 +115,13 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useAppearanceBootstrap();
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <AppearanceSettings />
     </QueryClientProvider>
   );
 }
