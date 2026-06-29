@@ -1,9 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { CodeInput } from "@/components/CodeInput";
-import type { LanguageId } from "@/lib/analyze.types";
+import { AnalysisResults } from "@/components/AnalysisResults";
+import { analyzeCode } from "@/lib/analyze.functions";
+import type { Analysis, LanguageId } from "@/lib/analyze.types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,12 +30,29 @@ export const Route = createFileRoute("/")({
 function Workbench() {
   const [language, setLanguage] = useState<LanguageId>("python");
   const [code, setCode] = useState("");
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const canAnalyze = code.trim().length > 0;
+  const analyze = useServerFn(analyzeCode);
+  const canAnalyze = code.trim().length > 0 && !loading;
+
+  const handleAnalyze = async () => {
+    setLoading(true);
+    setError(null);
+    setAnalysis(null);
+    try {
+      const result = await analyze({ data: { language, code } });
+      setAnalysis(result);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "分析失败，请稍后重试");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header — restrained, single horizontal rule */}
       <header className="border-b border-border bg-background">
         <div className="mx-auto max-w-[1400px] px-8 py-6 flex items-center justify-between">
           <div className="flex items-baseline gap-3">
@@ -50,10 +70,8 @@ function Workbench() {
         </div>
       </header>
 
-      {/* Main */}
       <main className="flex-1 mx-auto max-w-[1400px] w-full px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10">
-          {/* Left — input */}
           <section>
             <div className="mb-5">
               <h2 className="text-[15px] text-foreground">提交代码</h2>
@@ -68,15 +86,24 @@ function Workbench() {
               </p>
               <button
                 disabled={!canAnalyze}
+                onClick={handleAnalyze}
                 className="inline-flex items-center gap-2 px-5 py-2 bg-primary text-primary-foreground text-sm transition-opacity disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90"
               >
-                <Sparkles className="h-4 w-4" strokeWidth={1.5} />
-                开始分析
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
+                    分析中
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" strokeWidth={1.5} />
+                    开始分析
+                  </>
+                )}
               </button>
             </div>
           </section>
 
-          {/* Right — results placeholder */}
           <section>
             <div className="mb-5">
               <h2 className="text-[15px] text-foreground">分析结果</h2>
@@ -84,15 +111,45 @@ function Workbench() {
                 AI 将给出语法、逻辑与性能维度的建议。
               </p>
             </div>
-            <div className="border border-border bg-card min-h-[420px] flex flex-col items-center justify-center text-center px-8">
-              <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center mb-4">
-                <Sparkles className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+
+            {loading ? (
+              <div className="flex flex-col gap-3">
+                <div className="border border-border bg-card p-6 animate-pulse">
+                  <div className="h-10 w-24 bg-surface mb-3" />
+                  <div className="h-3 w-full bg-surface mb-2" />
+                  <div className="h-3 w-2/3 bg-surface" />
+                </div>
+                <div className="border border-border bg-card p-5 animate-pulse">
+                  <div className="h-3 w-1/3 bg-surface mb-3" />
+                  <div className="h-3 w-full bg-surface mb-2" />
+                  <div className="h-3 w-4/5 bg-surface" />
+                </div>
               </div>
-              <p className="text-sm text-foreground">等待你的代码</p>
-              <p className="text-xs text-muted-foreground mt-1.5 max-w-xs">
-                提交后，分析结果会出现在这里。
-              </p>
-            </div>
+            ) : error ? (
+              <div className="border border-destructive/30 bg-card p-6">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-4 w-4 mt-0.5 text-destructive" strokeWidth={1.5} />
+                  <div>
+                    <p className="text-sm text-foreground">分析未完成</p>
+                    <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                      {error}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : analysis ? (
+              <AnalysisResults data={analysis} onApplyFix={(c) => setCode(c)} />
+            ) : (
+              <div className="border border-border bg-card min-h-[420px] flex flex-col items-center justify-center text-center px-8">
+                <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center mb-4">
+                  <Sparkles className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+                </div>
+                <p className="text-sm text-foreground">等待你的代码</p>
+                <p className="text-xs text-muted-foreground mt-1.5 max-w-xs">
+                  提交后，分析结果会出现在这里。
+                </p>
+              </div>
+            )}
           </section>
         </div>
       </main>
