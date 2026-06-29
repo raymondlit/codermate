@@ -37,7 +37,7 @@ export const Route = createFileRoute("/cases/$caseId")({
 });
 
 function CaseDetailPage() {
-  const c = Route.useLoaderData();
+  const c = Route.useLoaderData() as FinanceCase;
   const navigate = useNavigate();
 
   const startPractice = () => {
