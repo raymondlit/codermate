@@ -127,7 +127,7 @@ function ApprovalsTab() {
     try {
       const { error } = approve
         ? await supabase.rpc("approve_teacher", { _application_id: id })
-        : await supabase.rpc("reject_teacher", { _application_id: id, _note: null });
+        : await supabase.rpc("reject_teacher", { _application_id: id });
       if (error) throw error;
       await load();
     } catch (e) {
