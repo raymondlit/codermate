@@ -130,7 +130,9 @@ function CasesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {filtered.map((c) => (
+            {filtered.map((c) => {
+              const stat = stats.get(c.id);
+              return (
               <Link
                 key={c.id}
                 to="/cases/$caseId"
@@ -147,18 +149,34 @@ function CasesPage() {
                 <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">
                   {c.description}
                 </p>
+                {stat && (
+                  <div className="mt-4 flex items-center gap-3 text-[11px] text-muted-foreground border-t border-border pt-3">
+                    <span>已练 {stat.attempt_count} 次</span>
+                    <span className="text-foreground">最高 {stat.best_score} 分</span>
+                  </div>
+                )}
                 <div className="mt-5 flex items-center justify-between text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
                     <Clock className="h-3 w-3" strokeWidth={1.5} />
                     约 {c.estimatedMinutes} 分钟
                   </span>
                   <span className="inline-flex items-center gap-1 text-foreground opacity-60 group-hover:opacity-100 transition-opacity">
-                    查看
-                    <ArrowRight className="h-3 w-3" strokeWidth={1.5} />
+                    {stat ? (
+                      <>
+                        <RotateCcw className="h-3 w-3" strokeWidth={1.5} />
+                        继续练习
+                      </>
+                    ) : (
+                      <>
+                        查看
+                        <ArrowRight className="h-3 w-3" strokeWidth={1.5} />
+                      </>
+                    )}
                   </span>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
