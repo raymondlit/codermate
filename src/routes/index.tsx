@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
-import { CodeInput } from "@/components/CodeInput";
+import { CodeInput, type CodeInputHandle } from "@/components/CodeInput";
 import { AnalysisResults } from "@/components/AnalysisResults";
 import { analyzeCode } from "@/lib/analyze.functions";
 import type { Analysis, LanguageId } from "@/lib/analyze.types";
@@ -33,6 +33,7 @@ function Workbench() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const codeInputRef = useRef<CodeInputHandle>(null);
 
   const analyze = useServerFn(analyzeCode);
   const canAnalyze = code.trim().length > 0 && !loading;
@@ -79,7 +80,7 @@ function Workbench() {
                 选择语言，粘贴或上传你的代码片段。
               </p>
             </div>
-            <CodeInput language={language} value={code} onChange={setCode} />
+            <CodeInput ref={codeInputRef} language={language} value={code} onChange={setCode} />
             <div className="mt-5 flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
                 {code ? `${code.split("\n").length} 行 · ${code.length} 字符` : "尚未输入"}
@@ -138,7 +139,11 @@ function Workbench() {
                 </div>
               </div>
             ) : analysis ? (
-              <AnalysisResults data={analysis} onApplyFix={(c) => setCode(c)} />
+              <AnalysisResults
+                data={analysis}
+                onApplyFix={(c) => setCode(c)}
+                onJumpToLine={(line) => codeInputRef.current?.jumpToLine(line)}
+              />
             ) : (
               <div className="border border-border bg-card min-h-[420px] flex flex-col items-center justify-center text-center px-8">
                 <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center mb-4">
