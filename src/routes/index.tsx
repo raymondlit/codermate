@@ -80,7 +80,7 @@ function Workbench() {
                 选择语言，粘贴或上传你的代码片段。
               </p>
             </div>
-            <CodeInput language={language} value={code} onChange={setCode} />
+            <CodeInput ref={codeInputRef} language={language} value={code} onChange={setCode} />
             <div className="mt-5 flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
                 {code ? `${code.split("\n").length} 行 · ${code.length} 字符` : "尚未输入"}
