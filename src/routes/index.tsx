@@ -54,6 +54,9 @@ function Workbench() {
     }
   };
 
+  const auth = useAuth();
+  const roleLabel = auth.role === "teacher" ? "教师" : auth.role === "admin" ? "管理员" : "学生";
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-border bg-background">
@@ -65,13 +68,44 @@ function Workbench() {
             <span className="text-xs text-muted-foreground tracking-widest uppercase">
               AI
             </span>
+            <span className="text-xs text-muted-foreground ml-2 hidden sm:inline">
+              智能代码纠错与优化
+            </span>
           </div>
-          <p className="text-xs text-muted-foreground">智能代码纠错与优化</p>
+          <div className="flex items-center gap-4">
+            {auth.loading ? null : auth.user ? (
+              <>
+                <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
+                  <User className="h-3.5 w-3.5" strokeWidth={1.5} />
+                  <span className="text-foreground">{auth.displayName}</span>
+                  <span className="text-[10px] uppercase tracking-widest px-1.5 py-0.5 border border-border">
+                    {roleLabel}
+                  </span>
+                </div>
+                <button
+                  onClick={() => void supabase.auth.signOut()}
+                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <LogOut className="h-3.5 w-3.5" strokeWidth={1.5} />
+                  退出
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/auth"
+                className="inline-flex items-center gap-1.5 text-xs text-foreground hover:opacity-70 transition-opacity"
+              >
+                <LogIn className="h-3.5 w-3.5" strokeWidth={1.5} />
+                登录 / 注册
+              </Link>
+            )}
+          </div>
         </div>
         <div className="mx-auto max-w-[1400px] px-8">
           <LanguageSelector value={language} onChange={setLanguage} />
         </div>
       </header>
+
 
       <main className="flex-1 mx-auto max-w-[1400px] w-full px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10">
