@@ -179,6 +179,9 @@ function AuthPage() {
             {error && (
               <p className="text-xs text-destructive leading-relaxed">{error}</p>
             )}
+            {info && (
+              <p className="text-xs text-foreground leading-relaxed border-l-2 border-foreground pl-3 py-1">{info}</p>
+            )}
 
             <button
               type="submit"
