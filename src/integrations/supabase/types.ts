@@ -45,6 +45,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          invite_code: string
           name: string
           teacher_id: string
           updated_at: string
@@ -53,6 +54,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          invite_code?: string
           name: string
           teacher_id: string
           updated_at?: string
@@ -61,6 +63,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          invite_code?: string
           name?: string
           teacher_id?: string
           updated_at?: string
@@ -248,6 +251,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      join_class_by_code: { Args: { _code: string }; Returns: string }
       reject_teacher: {
         Args: { _application_id: string; _note?: string }
         Returns: undefined
