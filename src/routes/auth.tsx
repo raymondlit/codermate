@@ -33,10 +33,20 @@ function AuthPage() {
     });
   }, [navigate]);
 
+  const [info, setInfo] = useState<string | null>(null);
+
+  // If already signed in, send to home
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) void navigate({ to: "/" });
+    });
+  }, [navigate]);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setInfo(null);
     try {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
@@ -51,6 +61,11 @@ function AuthPage() {
           },
         });
         if (error) throw error;
+        if (role === "teacher") {
+          setInfo("教师注册申请已提交，请等待超级管理员审批。审批通过后即可使用教师功能。");
+          setLoading(false);
+          return;
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -163,6 +178,9 @@ function AuthPage() {
 
             {error && (
               <p className="text-xs text-destructive leading-relaxed">{error}</p>
+            )}
+            {info && (
+              <p className="text-xs text-foreground leading-relaxed border-l-2 border-foreground pl-3 py-1">{info}</p>
             )}
 
             <button
