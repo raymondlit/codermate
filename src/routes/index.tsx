@@ -33,6 +33,7 @@ function Workbench() {
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const codeInputRef = useRef<CodeInputHandle>(null);
 
   const analyze = useServerFn(analyzeCode);
   const canAnalyze = code.trim().length > 0 && !loading;
