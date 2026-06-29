@@ -121,7 +121,14 @@ function Workbench() {
       setLoading(false);
     }
   };
-  const roleLabel = auth.role === "teacher" ? "教师" : auth.role === "admin" ? "管理员" : "学生";
+  const roleLabel =
+    auth.role === "super_admin"
+      ? "超级管理员"
+      : auth.role === "teacher"
+        ? "教师"
+        : auth.role === "admin"
+          ? "管理员"
+          : "学生";
 
 
   return (
