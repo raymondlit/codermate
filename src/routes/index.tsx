@@ -121,10 +121,8 @@ function Workbench() {
       setLoading(false);
     }
   };
-
-
-  const auth = useAuth();
   const roleLabel = auth.role === "teacher" ? "教师" : auth.role === "admin" ? "管理员" : "学生";
+
 
   return (
     <div className="min-h-screen flex flex-col">
