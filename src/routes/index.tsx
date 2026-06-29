@@ -161,6 +161,15 @@ function Workbench() {
               <LineChart className="h-3.5 w-3.5" strokeWidth={1.5} />
               学习报告
             </Link>
+            {auth.role === "super_admin" && (
+              <Link
+                to="/admin"
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <User className="h-3.5 w-3.5" strokeWidth={1.5} />
+                管理后台
+              </Link>
+            )}
             {auth.loading ? null : auth.user ? (
               <>
                 <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
