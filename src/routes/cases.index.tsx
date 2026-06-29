@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { ArrowRight, Clock, ChevronLeft } from "lucide-react";
 import { CATEGORIES, FINANCE_CASES, type CaseCategory, type CaseDifficulty } from "@/lib/cases";
 
-export const Route = createFileRoute("/cases")({
+export const Route = createFileRoute("/cases/")({
   head: () => ({
     meta: [
       { title: "Python 财务案例库 · CodeMentor AI" },
