@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { ArrowRight, Clock, ChevronLeft } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { ArrowRight, Clock, ChevronLeft, RotateCcw } from "lucide-react";
 import { CATEGORIES, FINANCE_CASES, type CaseCategory, type CaseDifficulty } from "@/lib/cases";
+import { listMyAttemptStats, type AttemptStat } from "@/lib/practice.functions";
+import { useAuth } from "@/lib/useAuth";
 
 export const Route = createFileRoute("/cases/")({
   head: () => ({
