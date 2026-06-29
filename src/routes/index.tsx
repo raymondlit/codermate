@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
-import { CodeInput } from "@/components/CodeInput";
+import { CodeInput, type CodeInputHandle } from "@/components/CodeInput";
 import { AnalysisResults } from "@/components/AnalysisResults";
 import { analyzeCode } from "@/lib/analyze.functions";
 import type { Analysis, LanguageId } from "@/lib/analyze.types";
