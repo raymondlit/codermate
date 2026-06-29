@@ -139,7 +139,11 @@ function Workbench() {
                 </div>
               </div>
             ) : analysis ? (
-              <AnalysisResults data={analysis} onApplyFix={(c) => setCode(c)} />
+              <AnalysisResults
+                data={analysis}
+                onApplyFix={(c) => setCode(c)}
+                onJumpToLine={(line) => codeInputRef.current?.jumpToLine(line)}
+              />
             ) : (
               <div className="border border-border bg-card min-h-[420px] flex flex-col items-center justify-center text-center px-8">
                 <div className="w-10 h-10 rounded-full border border-border flex items-center justify-center mb-4">
