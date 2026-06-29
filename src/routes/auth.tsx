@@ -161,6 +161,21 @@ function AuthPage() {
                     ))}
                   </div>
                 </div>
+                {role === "student" && (
+                  <div>
+                    <label className="block text-[11px] text-muted-foreground uppercase tracking-wider mb-1.5">
+                      班级邀请码 <span className="normal-case tracking-normal">（可选）</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={inviteCode}
+                      onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                      maxLength={16}
+                      className="w-full px-3 py-2 text-sm font-mono tracking-widest bg-card border border-border focus:border-foreground focus:outline-none uppercase"
+                      placeholder="如有老师提供的邀请码请填写"
+                    />
+                  </div>
+                )}
               </>
             )}
 
