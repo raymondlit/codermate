@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Loader2, AlertCircle, LogIn, LogOut, User } from "lucide-react";
+import { Sparkles, Loader2, AlertCircle, LogIn, LogOut, User, BookOpen } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { CodeInput, type CodeInputHandle } from "@/components/CodeInput";
 import { AnalysisResults } from "@/components/AnalysisResults";
