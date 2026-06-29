@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Loader2, AlertCircle, LogIn, LogOut, User, BookOpen } from "lucide-react";
+import { Sparkles, Loader2, AlertCircle, LogIn, LogOut, User, BookOpen, LineChart, CheckCircle2 } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { CodeInput, type CodeInputHandle } from "@/components/CodeInput";
 import { AnalysisResults } from "@/components/AnalysisResults";
@@ -9,6 +9,7 @@ import { analyzeCode } from "@/lib/analyze.functions";
 import type { Analysis, LanguageId } from "@/lib/analyze.types";
 import { useAuth } from "@/lib/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { saveAttempt } from "@/lib/practice.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,7 +37,14 @@ function Workbench() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const codeInputRef = useRef<CodeInputHandle>(null);
-  const [practice, setPractice] = useState<{ caseTitle?: string; notes?: string } | null>(null);
+  const [practice, setPractice] = useState<{
+    caseId?: string;
+    caseTitle?: string;
+    caseCategory?: string;
+    notes?: string;
+  } | null>(null);
+  const startedAtRef = useRef<number>(Date.now());
+  const [saved, setSaved] = useState(false);
 
   // 从案例库带过来的练习初始化
   useEffect(() => {
@@ -47,38 +55,74 @@ function Workbench() {
       const payload = JSON.parse(raw) as {
         language?: LanguageId;
         code?: string;
+        caseId?: string;
         caseTitle?: string;
+        caseCategory?: string;
         notes?: string;
       };
       if (payload.language) setLanguage(payload.language);
       if (payload.code) setCode(payload.code);
       if (payload.caseTitle || payload.notes) {
-        setPractice({ caseTitle: payload.caseTitle, notes: payload.notes });
+        setPractice({
+          caseId: payload.caseId,
+          caseTitle: payload.caseTitle,
+          caseCategory: payload.caseCategory,
+          notes: payload.notes,
+        });
       }
+      startedAtRef.current = Date.now();
     } catch {
       /* ignore */
     }
   }, []);
 
   const analyze = useServerFn(analyzeCode);
+  const saveAttemptFn = useServerFn(saveAttempt);
   const canAnalyze = code.trim().length > 0 && !loading;
+  const auth = useAuth();
 
   const handleAnalyze = async () => {
     setLoading(true);
     setError(null);
     setAnalysis(null);
+    setSaved(false);
     try {
       const result = await analyze({ data: { language, code } });
       setAnalysis(result);
+      // 自动记录练习结果
+      if (auth.user && practice?.caseId && practice.caseTitle && practice.caseCategory) {
+        const duration = Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000));
+        try {
+          await saveAttemptFn({
+            data: {
+              caseId: practice.caseId,
+              caseTitle: practice.caseTitle,
+              caseCategory: practice.caseCategory,
+              language,
+              code,
+              score: Math.round(result.overallScore),
+              durationSeconds: duration,
+              issues: result.issues.map((i) => ({
+                category: i.category,
+                severity: i.severity,
+                message: i.message,
+              })),
+              aiSummary: result.summary,
+            },
+          });
+          setSaved(true);
+        } catch {
+          /* silent — non-blocking */
+        }
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "分析失败，请稍后重试");
     } finally {
       setLoading(false);
     }
   };
-
-  const auth = useAuth();
   const roleLabel = auth.role === "teacher" ? "教师" : auth.role === "admin" ? "管理员" : "学生";
+
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -102,6 +146,13 @@ function Workbench() {
             >
               <BookOpen className="h-3.5 w-3.5" strokeWidth={1.5} />
               财务案例库
+            </Link>
+            <Link
+              to="/reports"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <LineChart className="h-3.5 w-3.5" strokeWidth={1.5} />
+              学习报告
             </Link>
             {auth.loading ? null : auth.user ? (
               <>
@@ -140,10 +191,20 @@ function Workbench() {
       <main className="flex-1 mx-auto max-w-[1400px] w-full px-8 py-10">
         {practice && (
           <div className="mb-8 border-l-2 border-foreground pl-4 py-2">
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-              正在练习
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+                  正在练习
+                </div>
+                <div className="text-sm text-foreground font-medium">{practice.caseTitle}</div>
+              </div>
+              {saved && (
+                <span className="inline-flex items-center gap-1 text-[11px] text-foreground">
+                  <CheckCircle2 className="h-3.5 w-3.5" strokeWidth={1.5} />
+                  本次成绩已记录
+                </span>
+              )}
             </div>
-            <div className="text-sm text-foreground font-medium">{practice.caseTitle}</div>
             {practice.notes && (
               <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
                 {practice.notes}
@@ -151,6 +212,7 @@ function Workbench() {
             )}
           </div>
         )}
+
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10">
           <section>
             <div className="mb-5">
