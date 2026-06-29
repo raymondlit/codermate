@@ -37,6 +37,20 @@ function Workbench() {
   const [error, setError] = useState<string | null>(null);
   const codeInputRef = useRef<CodeInputHandle>(null);
 
+  // 从案例库带过来的练习初始化
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("codementor:practice");
+      if (!raw) return;
+      sessionStorage.removeItem("codementor:practice");
+      const payload = JSON.parse(raw) as { language?: LanguageId; code?: string };
+      if (payload.language) setLanguage(payload.language);
+      if (payload.code) setCode(payload.code);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   const analyze = useServerFn(analyzeCode);
   const canAnalyze = code.trim().length > 0 && !loading;
 
