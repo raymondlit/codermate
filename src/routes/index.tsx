@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Sparkles, Loader2, AlertCircle, LogIn, LogOut, User } from "lucide-react";
+import { Sparkles, Loader2, AlertCircle, LogIn, LogOut, User, BookOpen } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { CodeInput, type CodeInputHandle } from "@/components/CodeInput";
 import { AnalysisResults } from "@/components/AnalysisResults";
@@ -36,6 +36,20 @@ function Workbench() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const codeInputRef = useRef<CodeInputHandle>(null);
+
+  // 从案例库带过来的练习初始化
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("codementor:practice");
+      if (!raw) return;
+      sessionStorage.removeItem("codementor:practice");
+      const payload = JSON.parse(raw) as { language?: LanguageId; code?: string };
+      if (payload.language) setLanguage(payload.language);
+      if (payload.code) setCode(payload.code);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const analyze = useServerFn(analyzeCode);
   const canAnalyze = code.trim().length > 0 && !loading;
@@ -73,6 +87,13 @@ function Workbench() {
             </span>
           </div>
           <div className="flex items-center gap-4">
+            <Link
+              to="/cases"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <BookOpen className="h-3.5 w-3.5" strokeWidth={1.5} />
+              财务案例库
+            </Link>
             {auth.loading ? null : auth.user ? (
               <>
                 <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground">
