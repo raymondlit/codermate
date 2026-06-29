@@ -37,7 +37,14 @@ function Workbench() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const codeInputRef = useRef<CodeInputHandle>(null);
-  const [practice, setPractice] = useState<{ caseTitle?: string; notes?: string } | null>(null);
+  const [practice, setPractice] = useState<{
+    caseId?: string;
+    caseTitle?: string;
+    caseCategory?: string;
+    notes?: string;
+  } | null>(null);
+  const startedAtRef = useRef<number>(Date.now());
+  const [saved, setSaved] = useState(false);
 
   // 从案例库带过来的练习初始化
   useEffect(() => {
@@ -48,35 +55,73 @@ function Workbench() {
       const payload = JSON.parse(raw) as {
         language?: LanguageId;
         code?: string;
+        caseId?: string;
         caseTitle?: string;
+        caseCategory?: string;
         notes?: string;
       };
       if (payload.language) setLanguage(payload.language);
       if (payload.code) setCode(payload.code);
       if (payload.caseTitle || payload.notes) {
-        setPractice({ caseTitle: payload.caseTitle, notes: payload.notes });
+        setPractice({
+          caseId: payload.caseId,
+          caseTitle: payload.caseTitle,
+          caseCategory: payload.caseCategory,
+          notes: payload.notes,
+        });
       }
+      startedAtRef.current = Date.now();
     } catch {
       /* ignore */
     }
   }, []);
 
   const analyze = useServerFn(analyzeCode);
+  const saveAttemptFn = useServerFn(saveAttempt);
   const canAnalyze = code.trim().length > 0 && !loading;
+  const auth = useAuth();
 
   const handleAnalyze = async () => {
     setLoading(true);
     setError(null);
     setAnalysis(null);
+    setSaved(false);
     try {
       const result = await analyze({ data: { language, code } });
       setAnalysis(result);
+      // 自动记录练习结果
+      if (auth.user && practice?.caseId && practice.caseTitle && practice.caseCategory) {
+        const duration = Math.max(1, Math.round((Date.now() - startedAtRef.current) / 1000));
+        try {
+          await saveAttemptFn({
+            data: {
+              caseId: practice.caseId,
+              caseTitle: practice.caseTitle,
+              caseCategory: practice.caseCategory,
+              language,
+              code,
+              score: Math.round(result.overallScore),
+              durationSeconds: duration,
+              issues: result.issues.map((i) => ({
+                category: i.category,
+                severity: i.severity,
+                message: i.message,
+              })),
+              aiSummary: result.summary,
+            },
+          });
+          setSaved(true);
+        } catch {
+          /* silent — non-blocking */
+        }
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "分析失败，请稍后重试");
     } finally {
       setLoading(false);
     }
   };
+
 
   const auth = useAuth();
   const roleLabel = auth.role === "teacher" ? "教师" : auth.role === "admin" ? "管理员" : "学生";
