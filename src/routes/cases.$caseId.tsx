@@ -56,6 +56,7 @@ function CaseDetailPage() {
         JSON.stringify({
           caseId: c.id,
           caseTitle: c.title,
+          caseCategory: c.category,
           language: "python",
           code,
           notes,
