@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      practice_attempts: {
+        Row: {
+          ai_summary: string | null
+          case_category: string
+          case_id: string
+          case_title: string
+          code: string
+          created_at: string
+          duration_seconds: number
+          id: string
+          issue_count: number
+          issues_summary: Json
+          language: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          case_category: string
+          case_id: string
+          case_title: string
+          code: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          issue_count?: number
+          issues_summary?: Json
+          language: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          ai_summary?: string | null
+          case_category?: string
+          case_id?: string
+          case_title?: string
+          code?: string
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          issue_count?: number
+          issues_summary?: Json
+          language?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
