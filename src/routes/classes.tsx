@@ -466,35 +466,55 @@ function ClassesPage() {
           )}
         </section>
 
-        <aside className="lg:border-l lg:border-border lg:pl-10">
-          <h2 className="text-sm font-medium text-foreground mb-6">班级成员</h2>
-          {!selected ? (
-            <p className="text-xs text-muted-foreground">点击班级卡片的「成员」查看名单。</p>
-          ) : members.length === 0 ? (
-            <p className="text-xs text-muted-foreground">暂无学生加入。把邀请码分享给学生即可。</p>
-          ) : (
-            <ul className="space-y-2">
-              {members.map((m) => (
-                <li
-                  key={m.student_id}
-                  className="flex items-center justify-between border border-border px-3 py-2"
-                >
-                  <div className="text-xs">
-                    <div className="text-foreground">{m.display_name ?? m.student_id.slice(0, 8)}</div>
-                    <div className="text-muted-foreground mt-0.5">
-                      加入于 {new Date(m.joined_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => void handleRemoveMember(selected, m.student_id)}
-                    className="p-1.5 text-muted-foreground hover:text-destructive"
-                    title="移出班级"
+        <aside className="lg:border-l lg:border-border lg:pl-10 space-y-8">
+          <section>
+            <h2 className="text-sm font-medium text-foreground mb-4">已注册成员（{members.length}）</h2>
+            {!selected ? (
+              <p className="text-xs text-muted-foreground">点击班级卡片的「成员」查看名单。</p>
+            ) : members.length === 0 ? (
+              <p className="text-xs text-muted-foreground">暂无学生注册加入。把邀请码分享给学生即可。</p>
+            ) : (
+              <ul className="space-y-2">
+                {members.map((m) => (
+                  <li
+                    key={m.student_id}
+                    className="flex items-center justify-between border border-border px-3 py-2"
                   >
-                    <X className="h-3.5 w-3.5" strokeWidth={1.5} />
-                  </button>
-                </li>
-              ))}
-            </ul>
+                    <div className="text-xs">
+                      <div className="text-foreground">{m.display_name ?? m.student_id.slice(0, 8)}</div>
+                      <div className="text-muted-foreground mt-0.5">
+                        加入于 {new Date(m.joined_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => void handleRemoveMember(selected, m.student_id)}
+                      className="p-1.5 text-muted-foreground hover:text-destructive"
+                      title="移出班级"
+                    >
+                      <X className="h-3.5 w-3.5" strokeWidth={1.5} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {selected && (
+            <section>
+              <h2 className="text-sm font-medium text-foreground mb-4">导入名册（{roster.length}）</h2>
+              {roster.length === 0 ? (
+                <p className="text-xs text-muted-foreground">尚未导入学生名单。可在左侧「导入名单建班」补充。</p>
+              ) : (
+                <ul className="text-xs divide-y divide-border border border-border max-h-[480px] overflow-auto">
+                  {roster.map((r) => (
+                    <li key={r.id} className="flex justify-between px-3 py-2">
+                      <span className="text-foreground">{r.student_name}</span>
+                      <span className="font-mono text-muted-foreground">{r.student_no ?? "—"}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           )}
         </aside>
       </main>
