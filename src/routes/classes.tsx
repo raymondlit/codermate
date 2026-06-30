@@ -11,9 +11,11 @@ import {
   Check,
   X,
   Pencil,
+  Upload,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
+import { ClassRosterImporter } from "@/components/ClassRosterImporter";
 
 export const Route = createFileRoute("/classes")({
   head: () => ({
