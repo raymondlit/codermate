@@ -262,17 +262,45 @@ function ClassesPage() {
 
       <main className="flex-1 mx-auto w-full max-w-[1400px] px-8 py-10 grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-10">
         <section>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
             <h2 className="text-sm font-medium text-foreground">班级列表</h2>
-            {canCreate && !creating && (
-              <button
-                onClick={() => setCreating(true)}
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 border border-border hover:bg-muted transition-colors"
-              >
-                <Plus className="h-3.5 w-3.5" strokeWidth={1.5} /> 新建班级
-              </button>
+            {canCreate && (
+              <div className="flex items-center gap-2">
+                {!importing && (
+                  <button
+                    onClick={() => {
+                      setImporting(true);
+                      setCreating(false);
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 border border-border hover:bg-muted transition-colors"
+                  >
+                    <Upload className="h-3.5 w-3.5" strokeWidth={1.5} /> 导入名单建班
+                  </button>
+                )}
+                {!creating && (
+                  <button
+                    onClick={() => {
+                      setCreating(true);
+                      setImporting(false);
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 border border-border hover:bg-muted transition-colors"
+                  >
+                    <Plus className="h-3.5 w-3.5" strokeWidth={1.5} /> 新建班级
+                  </button>
+                )}
+              </div>
             )}
           </div>
+
+          {importing && (
+            <ClassRosterImporter
+              onDone={() => {
+                setImporting(false);
+                void reload();
+              }}
+              onCancel={() => setImporting(false)}
+            />
+          )}
 
           {!canCreate && (
             <div className="mb-6 text-xs text-muted-foreground border border-border p-3 bg-muted/30">
