@@ -55,6 +55,7 @@ function ClassesPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
@@ -62,6 +63,7 @@ function ClassesPage() {
   const [editDesc, setEditDesc] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [members, setMembers] = useState<MemberRow[]>([]);
+  const [roster, setRoster] = useState<{ id: string; student_no: string | null; student_name: string }[]>([]);
   const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
