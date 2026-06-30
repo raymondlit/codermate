@@ -40,6 +40,41 @@ export type Database = {
           },
         ]
       }
+      class_roster: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          linked_user_id: string | null
+          student_name: string
+          student_no: string | null
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          linked_user_id?: string | null
+          student_name: string
+          student_no?: string | null
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          linked_user_id?: string | null
+          student_name?: string
+          student_no?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_roster_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           created_at: string
@@ -244,6 +279,14 @@ export type Database = {
     }
     Functions: {
       approve_teacher: { Args: { _application_id: string }; Returns: undefined }
+      bulk_upsert_classes_with_roster: {
+        Args: { _payload: Json }
+        Returns: {
+          class_id: string
+          class_name: string
+          inserted_count: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

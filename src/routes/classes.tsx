@@ -11,9 +11,11 @@ import {
   Check,
   X,
   Pencil,
+  Upload,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/useAuth";
+import { ClassRosterImporter } from "@/components/ClassRosterImporter";
 
 export const Route = createFileRoute("/classes")({
   head: () => ({
@@ -53,6 +55,7 @@ function ClassesPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
@@ -60,6 +63,7 @@ function ClassesPage() {
   const [editDesc, setEditDesc] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [members, setMembers] = useState<MemberRow[]>([]);
+  const [roster, setRoster] = useState<{ id: string; student_no: string | null; student_name: string }[]>([]);
   const [copied, setCopied] = useState<string | null>(null);
 
   useEffect(() => {
@@ -116,12 +120,20 @@ function ClassesPage() {
 
   const loadMembers = useCallback(async (classId: string) => {
     setSelected(classId);
-    const { data } = await supabase
-      .from("class_members")
-      .select("student_id,joined_at")
-      .eq("class_id", classId)
-      .order("joined_at", { ascending: false });
-    const list = (data ?? []) as { student_id: string; joined_at: string }[];
+    const [{ data: memRows }, { data: rosterRows }] = await Promise.all([
+      supabase
+        .from("class_members")
+        .select("student_id,joined_at")
+        .eq("class_id", classId)
+        .order("joined_at", { ascending: false }),
+      supabase
+        .from("class_roster")
+        .select("id,student_no,student_name")
+        .eq("class_id", classId)
+        .order("student_no", { ascending: true }),
+    ]);
+    const list = (memRows ?? []) as { student_id: string; joined_at: string }[];
+    setRoster((rosterRows ?? []) as { id: string; student_no: string | null; student_name: string }[]);
     if (!list.length) {
       setMembers([]);
       return;
@@ -250,17 +262,45 @@ function ClassesPage() {
 
       <main className="flex-1 mx-auto w-full max-w-[1400px] px-8 py-10 grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-10">
         <section>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6 gap-2 flex-wrap">
             <h2 className="text-sm font-medium text-foreground">班级列表</h2>
-            {canCreate && !creating && (
-              <button
-                onClick={() => setCreating(true)}
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 border border-border hover:bg-muted transition-colors"
-              >
-                <Plus className="h-3.5 w-3.5" strokeWidth={1.5} /> 新建班级
-              </button>
+            {canCreate && (
+              <div className="flex items-center gap-2">
+                {!importing && (
+                  <button
+                    onClick={() => {
+                      setImporting(true);
+                      setCreating(false);
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 border border-border hover:bg-muted transition-colors"
+                  >
+                    <Upload className="h-3.5 w-3.5" strokeWidth={1.5} /> 导入名单建班
+                  </button>
+                )}
+                {!creating && (
+                  <button
+                    onClick={() => {
+                      setCreating(true);
+                      setImporting(false);
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 border border-border hover:bg-muted transition-colors"
+                  >
+                    <Plus className="h-3.5 w-3.5" strokeWidth={1.5} /> 新建班级
+                  </button>
+                )}
+              </div>
             )}
           </div>
+
+          {importing && (
+            <ClassRosterImporter
+              onDone={() => {
+                setImporting(false);
+                void reload();
+              }}
+              onCancel={() => setImporting(false)}
+            />
+          )}
 
           {!canCreate && (
             <div className="mb-6 text-xs text-muted-foreground border border-border p-3 bg-muted/30">
@@ -426,35 +466,55 @@ function ClassesPage() {
           )}
         </section>
 
-        <aside className="lg:border-l lg:border-border lg:pl-10">
-          <h2 className="text-sm font-medium text-foreground mb-6">班级成员</h2>
-          {!selected ? (
-            <p className="text-xs text-muted-foreground">点击班级卡片的「成员」查看名单。</p>
-          ) : members.length === 0 ? (
-            <p className="text-xs text-muted-foreground">暂无学生加入。把邀请码分享给学生即可。</p>
-          ) : (
-            <ul className="space-y-2">
-              {members.map((m) => (
-                <li
-                  key={m.student_id}
-                  className="flex items-center justify-between border border-border px-3 py-2"
-                >
-                  <div className="text-xs">
-                    <div className="text-foreground">{m.display_name ?? m.student_id.slice(0, 8)}</div>
-                    <div className="text-muted-foreground mt-0.5">
-                      加入于 {new Date(m.joined_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => void handleRemoveMember(selected, m.student_id)}
-                    className="p-1.5 text-muted-foreground hover:text-destructive"
-                    title="移出班级"
+        <aside className="lg:border-l lg:border-border lg:pl-10 space-y-8">
+          <section>
+            <h2 className="text-sm font-medium text-foreground mb-4">已注册成员（{members.length}）</h2>
+            {!selected ? (
+              <p className="text-xs text-muted-foreground">点击班级卡片的「成员」查看名单。</p>
+            ) : members.length === 0 ? (
+              <p className="text-xs text-muted-foreground">暂无学生注册加入。把邀请码分享给学生即可。</p>
+            ) : (
+              <ul className="space-y-2">
+                {members.map((m) => (
+                  <li
+                    key={m.student_id}
+                    className="flex items-center justify-between border border-border px-3 py-2"
                   >
-                    <X className="h-3.5 w-3.5" strokeWidth={1.5} />
-                  </button>
-                </li>
-              ))}
-            </ul>
+                    <div className="text-xs">
+                      <div className="text-foreground">{m.display_name ?? m.student_id.slice(0, 8)}</div>
+                      <div className="text-muted-foreground mt-0.5">
+                        加入于 {new Date(m.joined_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => void handleRemoveMember(selected, m.student_id)}
+                      className="p-1.5 text-muted-foreground hover:text-destructive"
+                      title="移出班级"
+                    >
+                      <X className="h-3.5 w-3.5" strokeWidth={1.5} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          {selected && (
+            <section>
+              <h2 className="text-sm font-medium text-foreground mb-4">导入名册（{roster.length}）</h2>
+              {roster.length === 0 ? (
+                <p className="text-xs text-muted-foreground">尚未导入学生名单。可在左侧「导入名单建班」补充。</p>
+              ) : (
+                <ul className="text-xs divide-y divide-border border border-border max-h-[480px] overflow-auto">
+                  {roster.map((r) => (
+                    <li key={r.id} className="flex justify-between px-3 py-2">
+                      <span className="text-foreground">{r.student_name}</span>
+                      <span className="font-mono text-muted-foreground">{r.student_no ?? "—"}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
           )}
         </aside>
       </main>
