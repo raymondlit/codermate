@@ -120,12 +120,20 @@ function ClassesPage() {
 
   const loadMembers = useCallback(async (classId: string) => {
     setSelected(classId);
-    const { data } = await supabase
-      .from("class_members")
-      .select("student_id,joined_at")
-      .eq("class_id", classId)
-      .order("joined_at", { ascending: false });
-    const list = (data ?? []) as { student_id: string; joined_at: string }[];
+    const [{ data: memRows }, { data: rosterRows }] = await Promise.all([
+      supabase
+        .from("class_members")
+        .select("student_id,joined_at")
+        .eq("class_id", classId)
+        .order("joined_at", { ascending: false }),
+      supabase
+        .from("class_roster")
+        .select("id,student_no,student_name")
+        .eq("class_id", classId)
+        .order("student_no", { ascending: true }),
+    ]);
+    const list = (memRows ?? []) as { student_id: string; joined_at: string }[];
+    setRoster((rosterRows ?? []) as { id: string; student_no: string | null; student_name: string }[]);
     if (!list.length) {
       setMembers([]);
       return;
