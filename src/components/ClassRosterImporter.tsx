@@ -260,9 +260,9 @@ export function ClassRosterImporter({ onDone, onCancel }: Props) {
       setErr(error.message);
       return;
     }
-    const inserted = ((data ?? []) as { class_name: string; inserted_count: number }[]).map((r) => ({
-      class_name: r.class_name,
-      inserted_count: r.inserted_count,
+    const inserted = ((data ?? []) as { out_class_name: string; out_inserted_count: number }[]).map((r) => ({
+      class_name: r.out_class_name,
+      inserted_count: r.out_inserted_count,
     }));
     setResult({ inserted, issues: report.issues });
   };
