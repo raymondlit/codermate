@@ -282,9 +282,9 @@ export type Database = {
       bulk_upsert_classes_with_roster: {
         Args: { _payload: Json }
         Returns: {
-          class_id: string
-          class_name: string
-          inserted_count: number
+          out_class_id: string
+          out_class_name: string
+          out_inserted_count: number
         }[]
       }
       has_role: {
