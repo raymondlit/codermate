@@ -294,6 +294,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_class_member: {
+        Args: { _class: string; _user: string }
+        Returns: boolean
+      }
+      is_class_teacher: {
+        Args: { _class: string; _user: string }
+        Returns: boolean
+      }
       join_class_by_code: { Args: { _code: string }; Returns: string }
       reject_teacher: {
         Args: { _application_id: string; _note?: string }
