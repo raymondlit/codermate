@@ -282,9 +282,9 @@ export type Database = {
       bulk_upsert_classes_with_roster: {
         Args: { _payload: Json }
         Returns: {
-          class_id: string
-          class_name: string
-          inserted_count: number
+          out_class_id: string
+          out_class_name: string
+          out_inserted_count: number
         }[]
       }
       has_role: {
@@ -292,6 +292,14 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_class_member: {
+        Args: { _class: string; _user: string }
+        Returns: boolean
+      }
+      is_class_teacher: {
+        Args: { _class: string; _user: string }
         Returns: boolean
       }
       join_class_by_code: { Args: { _code: string }; Returns: string }
